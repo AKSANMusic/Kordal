@@ -5,6 +5,7 @@ using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Chordality.Engine;
+using Chordality.Audio;
 
 namespace Chordality.App.ViewModels;
 
@@ -77,9 +78,23 @@ public partial class ChordEngineViewModel : ObservableObject
 
     public ObservableCollection<string> NoteBlocks => new(ActiveNotes.Select(PitchFormatter.GetNoteName));
 
+    // Audio engine instance
+    private AudioPlaybackEngine? _audioEngine;
+    private int[] _lastPlayingNotes = Array.Empty<int>();
+
     public ChordEngineViewModel()
     {
         InitializeModifiers();
+
+        try
+        {
+            _audioEngine = new AudioPlaybackEngine();
+        }
+        catch
+        {
+            // Failsafe: if audio totally fails to init, we proceed silently for UI testing.
+        }
+
         Modifiers.CollectionChanged += (s, e) => UpdateNotes();
         UpdateNotes();
     }
@@ -135,6 +150,35 @@ public partial class ChordEngineViewModel : ObservableObject
     private void UpdateNotes()
     {
         ActiveNotes = Chord.GenerateNotes(RootPitch, Octave, Quality, Modifiers, Inversion);
+
+        if (_audioEngine != null)
+        {
+            // Find notes to turn off
+            foreach (var note in _lastPlayingNotes)
+            {
+                if (!Array.Exists(ActiveNotes, n => n == note))
+                {
+                    _audioEngine.Synthesizer.NoteOff(note);
+                }
+            }
+
+            // Find notes to turn on
+            foreach (var note in ActiveNotes)
+            {
+                if (!Array.Exists(_lastPlayingNotes, n => n == note))
+                {
+                    _audioEngine.Synthesizer.NoteOn(note, 0.8f);
+                }
+            }
+
+            _lastPlayingNotes = (int[])ActiveNotes.Clone();
+        }
+    }
+
+    public void CleanupAudio()
+    {
+        _audioEngine?.Dispose();
+        _audioEngine = null;
     }
 
     [RelayCommand]

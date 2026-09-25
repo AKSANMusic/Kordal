@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Chordality.Engine\Chordality.Engine.csproj" />
+    <ProjectReference Include="..\Chordality.Audio\Chordality.Audio.csproj" />
   </ItemGroup>
 
   <!--
