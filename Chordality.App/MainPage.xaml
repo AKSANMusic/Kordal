@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:Chordality_App"
+    xmlns:vm="using:Chordality.App.ViewModels"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
@@ -23,14 +24,54 @@
             <TextBlock Text="[ Visualizers Viewport ]" Foreground="#FF8000" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
         </Border>
 
-        <!-- Middle Section Placeholder -->
+        <!-- Middle Section: Circle of Fifths -->
         <Border Grid.Row="1" BorderBrush="#00FF00" BorderThickness="0,0,0,1">
-            <TextBlock Text="[ Circle of Fifths Radial UI ]" Foreground="#00FF00" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+            <Grid>
+                <!-- Radial Nodes Canvas -->
+                <Canvas x:Name="CircleCanvas" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        PointerMoved="CircleCanvas_PointerMoved" PointerPressed="CircleCanvas_PointerPressed" Background="Transparent" Width="400" Height="400"/>
+
+                <!-- Central Typography -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                    <TextBlock Text="{x:Bind ViewModel.ActiveChordName, Mode=OneWay}" Foreground="#00FF00" FontSize="48" FontFamily="Consolas" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{x:Bind ViewModel.ActiveNotesDisplay, Mode=OneWay}" Foreground="#00FF00" FontSize="16" FontFamily="Consolas" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Bottom Section Placeholder -->
-        <Border Grid.Row="2">
-            <TextBlock Text="[ Modifier Matrix ]" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+        <!-- Bottom Section: Modifier Matrix -->
+        <Border Grid.Row="2" Padding="20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Modifiers Grid -->
+                <GridView Grid.Column="0" ItemsSource="{x:Bind ViewModel.ModifierItems}" SelectionMode="None">
+                    <GridView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ModifierItem">
+                            <ToggleButton Content="{x:Bind DisplayName}"
+                                          IsChecked="{x:Bind IsActive, Mode=TwoWay}"
+                                          Width="60" Height="40"
+                                          Margin="4"
+                                          Background="#1A1A24"
+                                          Foreground="#00FF00"
+                                          BorderBrush="#00FF00"
+                                          BorderThickness="1"
+                                          CornerRadius="4" />
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+
+                <!-- Inversion Controls -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="20,0,0,0">
+                    <Button Content="▲" Command="{x:Bind ViewModel.InversionUpCommand}" Width="50" Height="40" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="4 4 0 0"/>
+                    <Button Content="0" Command="{x:Bind ViewModel.InversionRootCommand}" Width="50" Height="40" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1,0,1,0" CornerRadius="0"/>
+                    <Button Content="▼" Command="{x:Bind ViewModel.InversionDownCommand}" Width="50" Height="40" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="0 0 4 4"/>
+                    <TextBlock Text="{x:Bind ViewModel.InversionDisplay, Mode=OneWay}" Foreground="#FF8000" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" />
+                </StackPanel>
+            </Grid>
         </Border>
 
     </Grid>
