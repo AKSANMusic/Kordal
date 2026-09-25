@@ -19,9 +19,63 @@
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
 
-        <!-- Top Section Placeholder -->
+        <!-- Top Section: Polymorphic Visualizers -->
         <Border Grid.Row="0" BorderBrush="#FF8000" BorderThickness="0,0,0,1">
-            <TextBlock Text="[ Visualizers Viewport ]" Foreground="#FF8000" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- View Switcher -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                    <Button Content="Pad" Click="SetPadMode" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="4 0 0 4"/>
+                    <Button Content="Blocks" Click="SetNoteBlockMode" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1,1,1,1" CornerRadius="0"/>
+                    <Button Content="Piano" Click="SetPianoMode" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1,1,1,1" CornerRadius="0"/>
+                    <Button Content="Guitar" Click="SetGuitarMode" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="0 4 4 0"/>
+                </StackPanel>
+
+                <!-- Mode: Pad -->
+                <Grid Grid.Row="1" x:Name="PadViewContainer" Visibility="Visible">
+                    <Border Background="#1A1A24" BorderBrush="#FF8000" BorderThickness="2" CornerRadius="8" Width="300" Height="150" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="{x:Bind ViewModel.ActiveChordName, Mode=OneWay}" Foreground="#FF8000" FontSize="48" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind ViewModel.InversionDisplay, Mode=OneWay}" Foreground="#FF8000" FontSize="20" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- Mode: Note Blocks -->
+                <Grid Grid.Row="1" x:Name="NoteBlockViewContainer" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.NoteBlocks, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="10"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Border Background="#1A1A24" BorderBrush="#FF8000" BorderThickness="2" CornerRadius="4" Width="60" Height="100">
+                                    <TextBlock Text="{x:Bind}" Foreground="#FF8000" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+
+                <!-- Mode: Piano -->
+                <Grid Grid.Row="1" x:Name="PianoViewContainer" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- We will render the piano keys in code-behind to map them exactly -->
+                    <Canvas x:Name="PianoCanvas" Width="600" Height="150" Background="Transparent"/>
+                </Grid>
+
+                <!-- Mode: Guitar -->
+                <Grid Grid.Row="1" x:Name="GuitarViewContainer" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <!-- Fretboard drawn in code-behind -->
+                    <Canvas x:Name="GuitarCanvas" Width="800" Height="180" Background="Transparent"/>
+                </Grid>
+
+            </Grid>
         </Border>
 
         <!-- Middle Section: Circle of Fifths -->

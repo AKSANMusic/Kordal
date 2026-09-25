@@ -35,11 +35,200 @@ public sealed partial class MainPage : Page
     {
         InitializeComponent();
         Loaded += MainPage_Loaded;
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     private void MainPage_Loaded(object sender, RoutedEventArgs e)
     {
         DrawCircleOfFifths();
+        DrawPiano();
+        DrawGuitarFretboard();
+        UpdateVisualizers();
+    }
+
+    private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ChordEngineViewModel.ActiveNotesDisplay))
+        {
+            UpdateVisualizers();
+        }
+    }
+
+    private void SetPadMode(object sender, RoutedEventArgs e) { SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode.Pad); }
+    private void SetNoteBlockMode(object sender, RoutedEventArgs e) { SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode.NoteBlock); }
+    private void SetPianoMode(object sender, RoutedEventArgs e) { SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode.Piano); }
+    private void SetGuitarMode(object sender, RoutedEventArgs e) { SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode.Guitar); }
+
+    private void SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode mode)
+    {
+        ViewModel.CurrentMode = mode;
+        PadViewContainer.Visibility = mode == ChordEngineViewModel.VisualizerMode.Pad ? Visibility.Visible : Visibility.Collapsed;
+        NoteBlockViewContainer.Visibility = mode == ChordEngineViewModel.VisualizerMode.NoteBlock ? Visibility.Visible : Visibility.Collapsed;
+        PianoViewContainer.Visibility = mode == ChordEngineViewModel.VisualizerMode.Piano ? Visibility.Visible : Visibility.Collapsed;
+        GuitarViewContainer.Visibility = mode == ChordEngineViewModel.VisualizerMode.Guitar ? Visibility.Visible : Visibility.Collapsed;
+        UpdateVisualizers();
+    }
+
+    private void UpdateVisualizers()
+    {
+        if (ViewModel.CurrentMode == ChordEngineViewModel.VisualizerMode.Piano)
+        {
+            DrawPiano();
+        }
+        else if (ViewModel.CurrentMode == ChordEngineViewModel.VisualizerMode.Guitar)
+        {
+            DrawGuitarFretboard();
+        }
+    }
+
+    // -- Piano View Logic --
+
+    private void DrawPiano()
+    {
+        PianoCanvas.Children.Clear();
+        // Standard range: C3 (48) to B5 (83) -> 3 octaves
+        int startNote = 48;
+        int endNote = 83;
+
+        double whiteKeyWidth = 25;
+        double whiteKeyHeight = 150;
+        double blackKeyWidth = 15;
+        double blackKeyHeight = 90;
+
+        int whiteKeyCount = 0;
+
+        // Arrays to map indices to key colors
+        bool[] isBlack = { false, true, false, true, false, false, true, false, true, false, true, false };
+
+        // 1st Pass: Draw White Keys
+        for (int note = startNote; note <= endNote; note++)
+        {
+            int pitchClass = PitchFormatter.GetPitchClass(note);
+            if (!isBlack[pitchClass])
+            {
+                bool isActive = Array.Exists(ViewModel.ActiveNotes, n => n == note);
+
+                var rect = new Rectangle
+                {
+                    Width = whiteKeyWidth,
+                    Height = whiteKeyHeight,
+                    Fill = new SolidColorBrush(isActive ? ColorHelper.FromArgb(255, 255, 128, 0) : Colors.White), // Neon Orange or White
+                    Stroke = new SolidColorBrush(Colors.Black),
+                    StrokeThickness = 1
+                };
+                Canvas.SetLeft(rect, whiteKeyCount * whiteKeyWidth);
+                Canvas.SetTop(rect, 0);
+                PianoCanvas.Children.Add(rect);
+                whiteKeyCount++;
+            }
+        }
+
+        // 2nd Pass: Draw Black Keys (drawn on top)
+        whiteKeyCount = 0;
+        for (int note = startNote; note <= endNote; note++)
+        {
+            int pitchClass = PitchFormatter.GetPitchClass(note);
+            if (isBlack[pitchClass])
+            {
+                bool isActive = Array.Exists(ViewModel.ActiveNotes, n => n == note);
+
+                var rect = new Rectangle
+                {
+                    Width = blackKeyWidth,
+                    Height = blackKeyHeight,
+                    Fill = new SolidColorBrush(isActive ? ColorHelper.FromArgb(255, 255, 128, 0) : Colors.Black), // Neon Orange or Black
+                    Stroke = new SolidColorBrush(Colors.Black),
+                    StrokeThickness = 1
+                };
+                Canvas.SetLeft(rect, (whiteKeyCount * whiteKeyWidth) - (blackKeyWidth / 2));
+                Canvas.SetTop(rect, 0);
+                PianoCanvas.Children.Add(rect);
+            }
+            else
+            {
+                whiteKeyCount++;
+            }
+        }
+    }
+
+    // -- Guitar View Logic --
+
+    private void DrawGuitarFretboard()
+    {
+        GuitarCanvas.Children.Clear();
+
+        double stringSpacing = 25;
+        double fretSpacing = 50;
+
+        int numStrings = 6;
+        int numFrets = GuitarVisualizer.MaxFrets;
+
+        // Draw Strings (Horizontal lines)
+        for (int i = 0; i < numStrings; i++)
+        {
+            var line = new Line
+            {
+                X1 = 0,
+                Y1 = i * stringSpacing + 20,
+                X2 = numFrets * fretSpacing,
+                Y2 = i * stringSpacing + 20,
+                Stroke = new SolidColorBrush(Colors.Gray),
+                StrokeThickness = 2
+            };
+            GuitarCanvas.Children.Add(line);
+        }
+
+        // Draw Frets (Vertical lines)
+        for (int i = 0; i <= numFrets; i++)
+        {
+            var line = new Line
+            {
+                X1 = i * fretSpacing,
+                Y1 = 20,
+                X2 = i * fretSpacing,
+                Y2 = (numStrings - 1) * stringSpacing + 20,
+                Stroke = new SolidColorBrush(i == 0 ? Colors.White : Colors.DarkGray),
+                StrokeThickness = i == 0 ? 4 : 2
+            };
+            GuitarCanvas.Children.Add(line);
+        }
+
+        // Calculate and Draw Fingerings
+        var fingerings = GuitarVisualizer.CalculateFingering(ViewModel.ActiveNotes);
+        foreach (var pos in fingerings)
+        {
+            // Note: Strings are visually drawn from top (E4) to bottom (E2).
+            // StandardTuning array is from E2 to E4 (index 0 to 5).
+            // So visual string index is (5 - pos.StringIndex).
+            int visualStringIndex = 5 - pos.StringIndex;
+
+            double x = pos.Fret == 0 ? -10 : (pos.Fret * fretSpacing) - (fretSpacing / 2);
+            double y = visualStringIndex * stringSpacing + 20;
+
+            var ellipse = new Ellipse
+            {
+                Width = 20,
+                Height = 20,
+                Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 0, 255, 0)) // Neon Green
+            };
+
+            Canvas.SetLeft(ellipse, x - 10);
+            Canvas.SetTop(ellipse, y - 10);
+            GuitarCanvas.Children.Add(ellipse);
+
+            var text = new TextBlock
+            {
+                Text = PitchFormatter.GetNoteName(pos.MidiNote),
+                Foreground = new SolidColorBrush(Colors.Black),
+                FontSize = 10,
+                FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Canvas.SetLeft(text, x - 8);
+            Canvas.SetTop(text, y - 8);
+            GuitarCanvas.Children.Add(text);
+        }
     }
 
     private void DrawCircleOfFifths()

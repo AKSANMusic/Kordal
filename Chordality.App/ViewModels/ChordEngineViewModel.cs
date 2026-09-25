@@ -46,6 +46,17 @@ public partial class ChordEngineViewModel : ObservableObject
 
     public ObservableCollection<ModifierItem> ModifierItems { get; } = new();
 
+    public enum VisualizerMode
+    {
+        Pad,
+        NoteBlock,
+        Piano,
+        Guitar
+    }
+
+    [ObservableProperty]
+    private VisualizerMode _currentMode = VisualizerMode.Pad;
+
     private int[] _activeNotes = Array.Empty<int>();
     public int[] ActiveNotes
     {
@@ -55,6 +66,7 @@ public partial class ChordEngineViewModel : ObservableObject
             if (SetProperty(ref _activeNotes, value))
             {
                 OnPropertyChanged(nameof(ActiveNotesDisplay));
+                OnPropertyChanged(nameof(NoteBlocks));
             }
         }
     }
@@ -62,6 +74,8 @@ public partial class ChordEngineViewModel : ObservableObject
     public string ActiveChordName => $"{RootPitch.ToString().Replace("Sharp", "#")} {(Quality == BaseQuality.Minor ? "m" : "")}";
 
     public string ActiveNotesDisplay => string.Join("  ", ActiveNotes);
+
+    public ObservableCollection<string> NoteBlocks => new(ActiveNotes.Select(PitchFormatter.GetNoteName));
 
     public ChordEngineViewModel()
     {
