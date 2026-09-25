@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="Chordality.App/Chordality.App.csproj">
+    <Platform Project="x86" />
+  </Project>
   <Project Path="Chordality.Engine.Tests/Chordality.Engine.Tests.csproj" />
   <Project Path="Chordality.Engine/Chordality.Engine.csproj" />
 </Solution>

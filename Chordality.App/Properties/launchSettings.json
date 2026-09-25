@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Chordality.App (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Chordality.App (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

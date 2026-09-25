@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Page
+    x:Class="Chordality_App.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Chordality_App"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="#050508">
+        <Grid.RowDefinitions>
+            <!-- Top Section: Polymorphic Visualizers -->
+            <RowDefinition Height="2*" />
+            <!-- Middle Section: Circle of Fifths -->
+            <RowDefinition Height="3*" />
+            <!-- Bottom Section: Modifier Matrix -->
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+
+        <!-- Top Section Placeholder -->
+        <Border Grid.Row="0" BorderBrush="#FF8000" BorderThickness="0,0,0,1">
+            <TextBlock Text="[ Visualizers Viewport ]" Foreground="#FF8000" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+        </Border>
+
+        <!-- Middle Section Placeholder -->
+        <Border Grid.Row="1" BorderBrush="#00FF00" BorderThickness="0,0,0,1">
+            <TextBlock Text="[ Circle of Fifths Radial UI ]" Foreground="#00FF00" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+        </Border>
+
+        <!-- Bottom Section Placeholder -->
+        <Border Grid.Row="2">
+            <TextBlock Text="[ Modifier Matrix ]" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+        </Border>
+
+    </Grid>
+</Page>
