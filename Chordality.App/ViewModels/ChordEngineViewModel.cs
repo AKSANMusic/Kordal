@@ -58,6 +58,12 @@ public partial class ChordEngineViewModel : ObservableObject
     [ObservableProperty]
     private VisualizerMode _currentMode = VisualizerMode.Pad;
 
+    [ObservableProperty]
+    private PlaybackMode _audioMode = PlaybackMode.Chord;
+
+    [ObservableProperty]
+    private double _bpm = 120.0;
+
     private int[] _activeNotes = Array.Empty<int>();
     public int[] ActiveNotes
     {
@@ -145,34 +151,22 @@ public partial class ChordEngineViewModel : ObservableObject
         {
             UpdateNotes();
         }
+        else if (e.PropertyName == nameof(AudioMode))
+        {
+            _audioEngine?.Sequencer.SetMode(AudioMode);
+            // Re-trigger notes in the new mode
+            _audioEngine?.Sequencer.UpdateNotes(ActiveNotes);
+        }
+        else if (e.PropertyName == nameof(Bpm))
+        {
+            _audioEngine?.Sequencer.SetBpm(Bpm);
+        }
     }
 
     private void UpdateNotes()
     {
         ActiveNotes = Chord.GenerateNotes(RootPitch, Octave, Quality, Modifiers, Inversion);
-
-        if (_audioEngine != null)
-        {
-            // Find notes to turn off
-            foreach (var note in _lastPlayingNotes)
-            {
-                if (!Array.Exists(ActiveNotes, n => n == note))
-                {
-                    _audioEngine.Synthesizer.NoteOff(note);
-                }
-            }
-
-            // Find notes to turn on
-            foreach (var note in ActiveNotes)
-            {
-                if (!Array.Exists(_lastPlayingNotes, n => n == note))
-                {
-                    _audioEngine.Synthesizer.NoteOn(note, 0.8f);
-                }
-            }
-
-            _lastPlayingNotes = (int[])ActiveNotes.Clone();
-        }
+        _audioEngine?.Sequencer.UpdateNotes(ActiveNotes);
     }
 
     public void CleanupAudio()

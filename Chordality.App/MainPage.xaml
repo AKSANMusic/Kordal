@@ -118,12 +118,29 @@
                     </GridView.ItemTemplate>
                 </GridView>
 
-                <!-- Inversion Controls -->
-                <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="20,0,0,0">
-                    <Button Content="▲" Command="{x:Bind ViewModel.InversionUpCommand}" Width="50" Height="40" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="4 4 0 0"/>
-                    <Button Content="0" Command="{x:Bind ViewModel.InversionRootCommand}" Width="50" Height="40" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1,0,1,0" CornerRadius="0"/>
-                    <Button Content="▼" Command="{x:Bind ViewModel.InversionDownCommand}" Width="50" Height="40" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="0 0 4 4"/>
-                    <TextBlock Text="{x:Bind ViewModel.InversionDisplay, Mode=OneWay}" Foreground="#FF8000" HorizontalAlignment="Center" Margin="0,5,0,0" FontSize="14" />
+                <!-- Sequencer & Inversion Controls -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Margin="20,0,0,0" Spacing="10">
+
+                    <!-- Sequencing Controls -->
+                    <StackPanel Orientation="Vertical" Spacing="5" Background="#1A1A24" Padding="5" CornerRadius="4" BorderBrush="#00FF00" BorderThickness="1">
+                        <TextBlock Text="PLAYBACK" Foreground="#00FF00" FontSize="10" HorizontalAlignment="Center" FontWeight="Bold"/>
+
+                        <RadioButton Content="Chord" IsChecked="True" Foreground="White" Checked="SetPlaybackChord"/>
+                        <RadioButton Content="Strum" Foreground="White" Checked="SetPlaybackStrum"/>
+                        <RadioButton Content="Arp" Foreground="White" Checked="SetPlaybackArp"/>
+
+                        <TextBlock Text="{x:Bind ViewModel.Bpm, Mode=OneWay}" Foreground="#00FF00" HorizontalAlignment="Center" FontSize="12" Margin="0,5,0,0"/>
+                        <Slider Minimum="60" Maximum="240" Value="{x:Bind ViewModel.Bpm, Mode=TwoWay}" Width="80"/>
+                    </StackPanel>
+
+                    <!-- Inversion Controls -->
+                    <StackPanel Orientation="Vertical">
+                        <Button Content="▲" Command="{x:Bind ViewModel.InversionUpCommand}" Width="50" Height="30" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="4 4 0 0" HorizontalAlignment="Center"/>
+                        <Button Content="0" Command="{x:Bind ViewModel.InversionRootCommand}" Width="50" Height="30" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1,0,1,0" CornerRadius="0" HorizontalAlignment="Center"/>
+                        <Button Content="▼" Command="{x:Bind ViewModel.InversionDownCommand}" Width="50" Height="30" Background="#1A1A24" Foreground="#FF8000" BorderBrush="#FF8000" BorderThickness="1" CornerRadius="0 0 4 4" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{x:Bind ViewModel.InversionDisplay, Mode=OneWay}" Foreground="#FF8000" HorizontalAlignment="Center" Margin="0,2,0,0" FontSize="12" />
+                    </StackPanel>
+
                 </StackPanel>
             </Grid>
         </Border>

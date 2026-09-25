@@ -59,6 +59,10 @@ public sealed partial class MainPage : Page
     private void SetPianoMode(object sender, RoutedEventArgs e) { SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode.Piano); }
     private void SetGuitarMode(object sender, RoutedEventArgs e) { SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode.Guitar); }
 
+    private void SetPlaybackChord(object sender, RoutedEventArgs e) { ViewModel.AudioMode = Chordality.Audio.PlaybackMode.Chord; }
+    private void SetPlaybackStrum(object sender, RoutedEventArgs e) { ViewModel.AudioMode = Chordality.Audio.PlaybackMode.Strum; }
+    private void SetPlaybackArp(object sender, RoutedEventArgs e) { ViewModel.AudioMode = Chordality.Audio.PlaybackMode.Arp; }
+
     private void SwitchVisualizerMode(ChordEngineViewModel.VisualizerMode mode)
     {
         ViewModel.CurrentMode = mode;

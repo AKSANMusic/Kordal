@@ -61,9 +61,12 @@ public class PolyphonicVoice : ISampleProvider
 
     public void Kill()
     {
-        _envelopeState = EnvelopeState.Idle;
-        _envelopeValue = 0;
-        CurrentMidiNote = -1;
+        // Smooth release rather than hard snap to prevent clicking
+        if (_envelopeState != EnvelopeState.Idle)
+        {
+            _envelopeState = EnvelopeState.Release;
+            _envelopeIncrement = -_envelopeValue / (0.01 * _sampleRate); // Fast 10ms fade out
+        }
     }
 
     public int Read(float[] buffer, int offset, int count)

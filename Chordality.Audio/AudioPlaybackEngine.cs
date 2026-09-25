@@ -7,11 +7,13 @@ namespace Chordality.Audio;
 public class AudioPlaybackEngine : IDisposable
 {
     private WasapiOut? _outputDevice;
-    public PolyphonicSynthesizer Synthesizer { get; }
+    private readonly PolyphonicSynthesizer _synth;
+    public SequencingSampleProvider Sequencer { get; }
 
     public AudioPlaybackEngine(int sampleRate = 44100, int maxVoices = 16)
     {
-        Synthesizer = new PolyphonicSynthesizer(sampleRate, maxVoices);
+        _synth = new PolyphonicSynthesizer(sampleRate, maxVoices);
+        Sequencer = new SequencingSampleProvider(_synth);
         InitializeAudio();
     }
 
@@ -21,7 +23,7 @@ public class AudioPlaybackEngine : IDisposable
         {
             // Use WASAPI in Shared Mode for low latency and system compatibility
             _outputDevice = new WasapiOut(NAudio.CoreAudioApi.AudioClientShareMode.Shared, 50);
-            _outputDevice.Init(Synthesizer);
+            _outputDevice.Init(Sequencer);
             _outputDevice.Play();
 
             // Subscribe to stopped event for naive recovery loop
@@ -73,7 +75,7 @@ public class AudioPlaybackEngine : IDisposable
 
     public void Dispose()
     {
-        Synthesizer.AllNotesOff();
+        _synth.AllNotesOff();
         DisposeOutputDevice();
     }
 }

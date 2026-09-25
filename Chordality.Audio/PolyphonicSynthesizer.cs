@@ -100,6 +100,8 @@ public class PolyphonicSynthesizer : ISynthesizer, ISampleProvider
         if (mixBuffer.Length < count)
         {
             mixBuffer = new float[count];
+            // Since we lock during execution, it is safe to assign back (though not thread-safe to re-size dynamically without locks).
+            // For this phase, we'll just let it allocate locally if it ever exceeds 4096 (which it shouldn't at 50ms buffer).
         }
 
         Array.Clear(buffer, offset, count);
