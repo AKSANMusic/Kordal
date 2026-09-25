@@ -150,6 +150,8 @@ public class SequencingSampleProvider : ISampleProvider
         }
     }
 
+    public long CurrentSample => _currentSample;
+
     public int Read(float[] buffer, int offset, int count)
     {
         // 1. Process pending UI commands before filling buffer

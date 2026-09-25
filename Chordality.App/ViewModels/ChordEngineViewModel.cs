@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Chordality.Engine;
 using Chordality.Audio;
+using Chordality.App.Services.Midi;
 
 namespace Chordality.App.ViewModels;
 
@@ -84,9 +85,16 @@ public partial class ChordEngineViewModel : ObservableObject
 
     public ObservableCollection<string> NoteBlocks => new(ActiveNotes.Select(PitchFormatter.GetNoteName));
 
-    // Audio engine instance
+    // Audio & MIDI instances
     private AudioPlaybackEngine? _audioEngine;
-    private int[] _lastPlayingNotes = Array.Empty<int>();
+    public WindowsMidiService MidiService { get; } = new();
+    private readonly MidiStashBuffer _stashBuffer = new();
+
+    [ObservableProperty]
+    private MidiDeviceInfo? _selectedMidiDevice;
+
+    [ObservableProperty]
+    private bool _isMidiEnabled = false;
 
     public ChordEngineViewModel()
     {
@@ -95,6 +103,26 @@ public partial class ChordEngineViewModel : ObservableObject
         try
         {
             _audioEngine = new AudioPlaybackEngine();
+            // Route NAudio Sequencer events to external MIDI queue and internal Stash Buffer
+            _audioEngine.Synthesizer.OnNoteOnFired += (note, velocity) =>
+            {
+                // Background thread safe
+                long timestamp = _audioEngine.Sequencer.CurrentSample;
+                _stashBuffer.Append(timestamp, true, (byte)note, (byte)(velocity * 127));
+
+                if (IsMidiEnabled && MidiService.IsConnected)
+                    MidiService.SendNoteOn(0, (byte)note, (byte)(velocity * 127));
+            };
+
+            _audioEngine.Synthesizer.OnNoteOffFired += (note) =>
+            {
+                // Background thread safe
+                long timestamp = _audioEngine.Sequencer.CurrentSample;
+                _stashBuffer.Append(timestamp, false, (byte)note, 0);
+
+                if (IsMidiEnabled && MidiService.IsConnected)
+                    MidiService.SendNoteOff(0, (byte)note);
+            };
         }
         catch
         {
@@ -161,6 +189,24 @@ public partial class ChordEngineViewModel : ObservableObject
         {
             _audioEngine?.Sequencer.SetBpm(Bpm);
         }
+        else if (e.PropertyName == nameof(SelectedMidiDevice))
+        {
+            if (SelectedMidiDevice != null)
+            {
+                _ = MidiService.ConnectAsync(SelectedMidiDevice.Id);
+            }
+            else
+            {
+                MidiService.Disconnect();
+            }
+        }
+        else if (e.PropertyName == nameof(IsMidiEnabled))
+        {
+            if (!IsMidiEnabled)
+            {
+                MidiService.SendAllNotesOff(0);
+            }
+        }
     }
 
     private void UpdateNotes()
@@ -173,6 +219,7 @@ public partial class ChordEngineViewModel : ObservableObject
     {
         _audioEngine?.Dispose();
         _audioEngine = null;
+        MidiService.Dispose();
     }
 
     [RelayCommand]
@@ -191,5 +238,34 @@ public partial class ChordEngineViewModel : ObservableObject
     private void InversionRoot()
     {
         Inversion = 0;
+    }
+
+    [RelayCommand]
+    private async System.Threading.Tasks.Task ExportStashAsync(string durationParam)
+    {
+        if (_audioEngine == null) return;
+
+        // durationParam represents minutes
+        if (!int.TryParse(durationParam, out int minutes)) return;
+
+        // Estimate number of events max we need (rough bound based on max dense playing)
+        // 50 events per sec * 60 = 3000 events/min
+        int countToSnapshot = minutes * 3000;
+
+        var snapshot = _stashBuffer.GetSnapshot(countToSnapshot);
+
+        // Let exporter run on background task
+        await System.Threading.Tasks.Task.Run(async () =>
+        {
+            string path = await MidiExporter.ExportStashAsync(snapshot, Bpm, _audioEngine.Sequencer.WaveFormat.SampleRate);
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                System.Diagnostics.Debug.WriteLine($"Exported MIDI Stash to: {path}");
+
+                // Trigger a File Explorer pop-up to show the saved file to the user
+                System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{path}\"");
+            }
+        });
     }
 }

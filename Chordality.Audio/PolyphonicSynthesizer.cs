@@ -16,6 +16,9 @@ public class PolyphonicSynthesizer : ISynthesizer, ISampleProvider
     private readonly HashSet<int> _activeNotes = new();
     private readonly object _lock = new();
 
+    public event Action<int, float>? OnNoteOnFired;
+    public event Action<int>? OnNoteOffFired;
+
     public PolyphonicSynthesizer(int sampleRate = 44100, int maxVoices = 16)
     {
         WaveFormat = WaveFormat.CreateIeeeFloatWaveFormat(sampleRate, 1);
@@ -59,6 +62,7 @@ public class PolyphonicSynthesizer : ISynthesizer, ISampleProvider
 
             freeVoice.NoteOn(midiNote, velocity);
             _activeNotes.Add(midiNote);
+            OnNoteOnFired?.Invoke(midiNote, velocity);
         }
     }
 
@@ -76,6 +80,7 @@ public class PolyphonicSynthesizer : ISynthesizer, ISampleProvider
                     }
                 }
                 _activeNotes.Remove(midiNote);
+                OnNoteOffFired?.Invoke(midiNote);
             }
         }
     }

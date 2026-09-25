@@ -9,6 +9,7 @@ public class AudioPlaybackEngine : IDisposable
     private WasapiOut? _outputDevice;
     private readonly PolyphonicSynthesizer _synth;
     public SequencingSampleProvider Sequencer { get; }
+    public PolyphonicSynthesizer Synthesizer => _synth;
 
     public AudioPlaybackEngine(int sampleRate = 44100, int maxVoices = 16)
     {
