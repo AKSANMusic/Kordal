@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Chordality.Engine.Tests/Chordality.Engine.Tests.csproj" />
+  <Project Path="Chordality.Engine/Chordality.Engine.csproj" />
+</Solution>
