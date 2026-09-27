@@ -41,7 +41,7 @@
       <uap:VisualElements
         DisplayName="Chordality.App"
         Description="Chordality.App"
-        BackgroundColor="transparent"
+        BackgroundColor="#050508"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
@@ -53,5 +53,11 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
     <systemai:Capability Name="systemAIModels"/>
+
+    <!-- Background Audio Capability -->
+    <uap3:Capability Name="backgroundMediaPlayback" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3" />
+
+    <!-- External MIDI Hardware Access -->
+    <DeviceCapability Name="midi" />
   </Capabilities>
 </Package>
