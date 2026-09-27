@@ -1,0 +1,33 @@
+name: Chordality V1 Release Build
+
+on:
+  push:
+    branches: [ "phase-1-engine-architecture-3655934891166351129" ]
+  pull_request:
+    branches: [ "phase-1-engine-architecture-3655934891166351129" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Core 8.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # اجرای همان اسکریپت طلایی که خودتان نوشتید
+    - name: Execute Custom Release Build Script
+      run: .\build_release.ps1
+      shell: powershell
+
+    # پیدا کردن فایل خروجی و آپلود آن به عنوان محصول نهایی
+    - name: Upload MSIX Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Chordality-V1-x64
+        # این مسیر تمام فایل‌های msix ساخته شده در پوشه AppPackages را پیدا می‌کند
+        path: Chordality.App\AppPackages\**\*.msix
